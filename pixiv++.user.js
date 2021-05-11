@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         pixiv++
 // @namespace    http://tampermonkey.net/
-// @version      0.0.1
+// @version      0.1.0
 // @description  Extension for pixiv (PC Web version)
 // @author       theta
 // @match        *://www.pixiv.net/*
@@ -80,16 +80,29 @@
             // install checker
             AddElmAtr(document.body, "b", "with pixiv++").style = "position: absolute; top: 45px; left: 90px;";
 
-            if (location.pathname == "/discovery") {
-                var dis_body = document.querySelector("#wrapper>div.layout-body");
-                // discovery layout fix
-                DomWaiter(dis_body, "div>div.gtm-illust-recommend-zone>div").then(il => {
-                    AddElmAtr(dis_body, "style",
-                        `#wrapper, #wrapper>div.layout-body { width: 1779px; } .${il.classList[0]} { margin: 64px 43px !important; transform: scale(1.4) !important; }` +
-                        `@media screen and (max-width:1780px){ #wrapper, #wrapper>div.layout-body { width: 1300px; } .${il.classList[0]} { margin: 40px 22px !important; transform: scale(1.2) !important; } }` +
-                        `@media screen and (max-width:1350px){ #wrapper, #wrapper>div.layout-body { width:  970px; } .${il.classList[0]} { margin: 24px 12px !important; transform: scale(1) !important;} }` // default
-                    );
-                });
+            switch (location.pathname) {
+                case "/discovery":
+                    let dis_body = document.querySelector("#wrapper>div.layout-body");
+                    // discovery layout fix
+                    DomWaiter(dis_body, "div>div.gtm-illust-recommend-zone>div").then(il => {
+                        AddElmAtr(dis_body, "style",
+                            `#wrapper, #wrapper>div.layout-body { width: 1779px; } .${il.classList[0]} { margin: 64px 43px !important; transform: scale(1.4) !important; }` +
+                            `@media screen and (max-width:1780px){ #wrapper, #wrapper>div.layout-body { width: 1300px; } .${il.classList[0]} { margin: 40px 22px !important; transform: scale(1.2) !important; } }` +
+                            `@media screen and (max-width:1350px){ #wrapper, #wrapper>div.layout-body { width:  970px; } .${il.classList[0]} { margin: 24px 12px !important; transform: scale(1) !important;} }` // default
+                        );
+                    });
+                    break;
+                case "/history.php":
+                    new MutationObserver(_ => { // page change
+                        AddElmAtr(document.body, "style",
+                            "._history-invitation-modal { display: none !important; } span.trial._history-item { opacity: 100 !important; }")
+                        for (let his of document.body.querySelectorAll(".trial._history-item")) {
+                            let bgi = his.style.backgroundImage;
+                            let hid = bgi.match(/\/(\d+?)_p0_/)[1];
+                            his.onclick = _ => { window.open(`https://www.pixiv.net/artworks/${hid}`); };
+                        }
+                    }).observe(document.body.querySelector("div.no-item"), { attributes: true, attributeFilter: ["class"] });
+                    break;
             }
         });
     } // Main
