@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         pixiv++
 // @namespace    http://tampermonkey.net/
-// @version      0.1.0
+// @version      0.1.1
 // @description  Extension for pixiv (PC Web version)
 // @author       theta
 // @match        *://www.pixiv.net/*
@@ -37,7 +37,8 @@
         }
         document.addEventListener("contextmenu", e => {
             var path_has_svg = false;
-            e.path.forEach((d) => {
+            const pathes = e.composedPath(); // firefox
+            pathes.forEach((d) => {
                 // without polyline, circle (< > button, UgoiraPlayButton)
                 path_has_svg |=
                     d.tagName?.toUpperCase() == "SVG" &&
@@ -45,7 +46,7 @@
                     d.querySelector("circle") == null;
             });
             var in_users = location.pathname.startsWith("/users/");
-            for (var d of e.path) {
+            for (var d of pathes) {
                 //force string
                 if (d.classList?.contains("gtm-illust-recommend-bookmark")) { // recommend, discovery
                     _OpenBookmarkWindow(d.getAttribute("data-gtm-recommend-illust-id"));
@@ -93,7 +94,7 @@
                     });
                     break;
                 case "/history.php":
-                    new MutationObserver(_ => { // page change
+                    const HistObs = new MutationObserver(_ => {
                         AddElmAtr(document.body, "style",
                             "._history-invitation-modal { display: none !important; } span.trial._history-item { opacity: 100 !important; }")
                         for (let his of document.body.querySelectorAll(".trial._history-item")) {
@@ -101,7 +102,9 @@
                             let hid = bgi.match(/\/(\d+?)_p0_/)[1];
                             his.onclick = _ => { window.open(`https://www.pixiv.net/artworks/${hid}`); };
                         }
-                    }).observe(document.body.querySelector("div.no-item"), { attributes: true, attributeFilter: ["class"] });
+                        HistObs.disconnect();
+                    });
+                    HistObs.observe(document.body.querySelector("div.no-item"), { attributes: true, attributeFilter: ["class"] });
                     break;
             }
         });
