@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         pixiv++
 // @namespace    http://tampermonkey.net/
-// @version      0.1.1
+// @version      0.1.2
 // @description  Extension for pixiv (PC Web version)
 // @author       theta
 // @match        *://www.pixiv.net/*
@@ -75,7 +75,10 @@
             "#root div>section div>aside>ul>li { z-index: 9; }\n" +
             // (/artworks) set < > btn background
             "#root nav>div>button { background: #FFF7; border-radius: 8px; }\n" + // user art
-            "#root figcaption>div>div>div>button { background: #FFF8; border-radius: 8px; }"); // おすすめ作品
+            "#root figcaption>div>div>div>button { background: #FFF8; border-radius: 8px; }\n" + // おすすめ作品
+            // bookmark_add.phpのthumbnailを拡張 
+            ".bookmark-detail-unit .thumbnail-container { left: 10px !important; width: 250px !important;　}\n"　+ 
+            ".bookmark-detail-unit .thumbnail-container > ._work { transform: scale(1.5); top: 40px; }"); 
 
         window.addEventListener("load", _ => { // onload
             // install checker
