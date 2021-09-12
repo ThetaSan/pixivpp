@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         pixiv++
 // @namespace    http://tampermonkey.net/
-// @version      0.1.3
+// @version      0.1.4
 // @description  Extension for pixiv (PC Web version)
 // @author       theta
 // @match        *://www.pixiv.net/*
@@ -38,13 +38,13 @@
         document.addEventListener("contextmenu", e => {
             var path_has_svg = false;
             const pathes = e.composedPath(); // firefox
-            pathes.forEach((d) => {
+            for (var d of pathes) {
                 // without polyline, circle (< > button, UgoiraPlayButton)
                 path_has_svg |=
                     d.tagName?.toUpperCase() == "SVG" &&
                     d.querySelector("polyline") == null &&
                     d.querySelector("circle") == null;
-            });
+            };
             var in_users = location.pathname.startsWith("/users/");
             for (var d of pathes) {
                 //force string
@@ -132,7 +132,7 @@
         var artworks_match = location.pathname.match(/\/artworks\/(\d+)/);
         if (artworks_match != null) { // art page
             const ART_ID = artworks_match[1];
-            DomWaiter(document.body, "#root div>div>div>div>main>section>div>div>figure>div[role=presentation]>div")
+            DomWaiter(document, "#root div>div>div>div>main>section>div>div>figure>div[role=presentation]>div")
                 .then(figure_sel => { // img loaded
                     figure_sel = figure_sel.parentElement;
                     var dl_atag =
@@ -199,13 +199,12 @@
                         dl_atag.onclick = e => { // img(s) downloader
                             if (dl_atag.getAttribute("processing") == "true") { return; }
                             dl_atag.startDownload();
-                            var img_count = 1;
+                            let img_count = 1;
 
-                            img_count = parseInt(
-                                figure_sel.querySelector("div>div>div>div>div>div>span").textContent.split("/")[1]
-                            );
+                            let img_count_elm = figure_sel.querySelector("div>div>div>div>div>div>span");
+                            if (img_count_elm) img_count = parseInt(img_count_elm.textContent.split("/")[1]);
                             if (isNaN(img_count)) {
-                                alert("error! : img_count is NaN");
+                                alert(`Error! : img_count is NaN \n val : ${img_count_elm.textContent}`);
                                 dl_atag.endDownload();
                                 return;
                             }
@@ -345,7 +344,7 @@
     function AddElmAtr(par, tag, tex = null, atr = {}) {
         let el = document.createElement(tag);
         el.textContent = tex;
-        Object.keys(atr).forEach(x => { el.setAttribute(x, atr[x]); })
+        for (var x of Object.keys(atr)) el.setAttribute(x, atr[x]);
         return par.appendChild(el);
     }
 })();
